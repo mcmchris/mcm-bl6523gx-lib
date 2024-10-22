@@ -1,12 +1,12 @@
 {
-    "name": "MCM_BL0940",
-    "keywords": "BL0940, Energy, Power consumption",
-    "description": "An Arduino library to interface the BL0940 Energy Meter IC with Arduino, ESP32 and Raspberry Pi Pico",
+    "name": "MCM_BL6523GX",
+    "keywords": "BL06523GX, Energy, Power consumption",
+    "description": "An Arduino library to interface the BL6523GX Energy Meter IC with Arduino",
     "repository": {
         "type": "git",
-        "url": "https://github.com/mcmchris/mcm-bl0940-lib.git"
+        "url": "https://github.com/mcmchris/mcm-bl6523gx-lib.git"
     },
-    "version": "0.0.2",
+    "version": "0.0.1",
     "exclude": "tests",
     "examples": "examples/*/*.ino",
     "frameworks": "arduino",
