@@ -1,0 +1,46 @@
+#######################################
+# MCM_BL0940
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+BL0940	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+getCurrent		KEYWORD2
+getVoltage		KEYWORD2
+getActivePower	KEYWORD2
+getActiveEnergy	KEYWORD2
+getPowerFactor	KEYWORD2
+getTemperature	KEYWORD2
+setFrequency	KEYWORD2
+setUpdateRate	KEYWORD2
+setOverCurrentDetection	KEYWORD2
+setCFOutputMode	KEYWORD2
+Reset			KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+timeout 		LITERAL1
+Vref 			LITERAL1
+R5 			LITERAL1
+Rt 			LITERAL1
+R8 			LITERAL1
+R9 			LITERAL1
+R10 			LITERAL1
+R11 			LITERAL1
+R12 			LITERAL1
+R7 			LITERAL1
+Hz 			LITERAL1
+updateRate 		LITERAL1
+_culcCheckSum 	LITERAL1
+_writeRegister 	LITERAL1
+_readRegister 	LITERAL1
