@@ -23,21 +23,18 @@
 #define ERR(...)
 #endif /* BL6523GX_DBG */
 
-BL6523GX::BL6523GX()
+bool BL6523GX::begin(uint32_t baud_rate, uint8_t rxPin, uint8_t txPin)
 {
 
   /* For M5STACK_PAPER */
   // Serial2.begin(4800, SERIAL_8N1, 18, 19);
 
-  BL_Serial.begin(4800, SERIAL_8N1, D0, D1);
+  BL_Serial.begin(baud_rate, SERIAL_8N1, rxPin, txPin);
 
   delay(500);
+  return true;
 }
 
-BL6523GX::~BL6523GX()
-{
-  BL_Serial.end();
-}
 
 uint8_t BL6523GX::_culcCheckSum(uint8_t *txData, int txLenght, uint8_t *rxData, int rxLenght) {
 

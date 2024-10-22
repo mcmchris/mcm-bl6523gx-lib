@@ -10,8 +10,7 @@
 class BL6523GX
 {
   public:
-    BL6523GX();
-    ~BL6523GX(); 
+    bool begin(uint32_t baud_rate, uint8_t rxPin, uint8_t txPin);
     bool getCurrent( float *currentA, float *currentB );  //[A]
     bool getVoltage( float *voltage );  //[V]
     bool getActivePower( float *activePowerA, float *activePowerB );  //[W]
