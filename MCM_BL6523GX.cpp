@@ -178,7 +178,8 @@ bool BL6523GX::getFrequency(float *freq) {
     return false;
   }
 
-  *freq = (2.73449463549 * 3579545.0) / (float)data;  //
+  //*freq = (2.73449463549 * 3579545.0) / (float)data;  //
+  *freq = (87.3906 * 3579545.0) / (32.0*(float)data);  // constants defined by datasheet
   return true;
 }
 
