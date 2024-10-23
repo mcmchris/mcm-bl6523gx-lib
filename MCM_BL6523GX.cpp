@@ -126,9 +126,13 @@ bool BL6523GX::setCFOutputMode(uint16_t cf_div) {
   return true;
 }
 
-bool BL6523GX::setGain() {
+bool BL6523GX::setGain(byte V_GAIN , byte IB_GAIN, byte IA_GAIN) {
 
-  if (false == _writeRegister(0x15, 0b000100010001)) {  //Voltage Gain, Current B Gain, Current A Gain
+  uint32_t gain_data = intToGain(V_GAIN) << 8 | intToGain(IB_GAIN) << 4 | intToGain(IA_GAIN);
+
+  Serial.println(gain_data, BIN);
+
+  if (false == _writeRegister(0x15, gain_data)) {  //Voltage Gain, Current B Gain, Current A Gain
     ERR("Can not write GAIN register.");
     return false;
   }
@@ -232,8 +236,9 @@ bool BL6523GX::getActiveEnergy(float *activeEnergy) {
   }
   float div;
   getCFOutputMode(&div);
-  *activeEnergy = (float)data* (100.0/div)*(1000.0/3200.0);  //
-
+  Serial.println(div);
+  //*activeEnergy = (float)data * (100.0/div)*(1000.0/3200.0);  // * (100.0/64)*(1000.0/3200.0)
+  *activeEnergy = (float)data;
   return true;
 }
 
@@ -277,6 +282,37 @@ bool BL6523GX::getCFOutputMode(float *div) {
 
   *div = (uint32_t)data;
   return true;
+}
+
+byte BL6523GX::intToGain(uint8_t gain){
+    uint8_t data;
+    switch(gain){
+        case 1:
+            data = 0b000;
+            break;
+        case 2:
+            data = 0b001;
+            break;
+        case 4:
+            data = 0b010;
+            break;
+        case 8:
+            data = 0b011;
+            break;
+        case 16:
+            data = 0b100;
+            break;
+        case 24:
+            data = 0b101;
+            break;
+        case 32:
+            data = 0b110;
+            break;
+        default:
+        Serial.println("Gain out of range");
+            break;
+    }
+    return data;
 }
 
 /*******************************************************************/
