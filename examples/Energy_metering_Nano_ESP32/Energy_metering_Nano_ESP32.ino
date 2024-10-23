@@ -15,6 +15,9 @@ int lock = 0;
 const long interval = 1000;
 
 #define CF_DIV 1
+#define V_GAIN 2
+#define IB_GAIN 2
+#define IA_GAIN 2
 
 void setup() {
   // put your setup code here, to run once:
@@ -29,7 +32,7 @@ void setup() {
 
   delay(250);
 
-  BL.setGain(2, 2, 2);
+  BL.setGain(V_GAIN, IB_GAIN, IA_GAIN); //Voltage Gain, Current B Gain, Current A Gain
   delay(25);
   BL.setMode();  // enabling the voltage high pass filter
   delay(25);
@@ -82,7 +85,7 @@ void loop() {
     delay(200);
     BL.Reset();
     delay(200);
-    BL.setGain();
+    BL.setGain(V_GAIN, IB_GAIN, IA_GAIN);
     delay(25);
     BL.setMode();  // enabling the voltage high pass filter
     delay(25);
