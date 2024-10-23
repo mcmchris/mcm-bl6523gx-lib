@@ -230,8 +230,9 @@ bool BL6523GX::getActiveEnergy(float *activeEnergy) {
     ERR("Can not read WATTHR register.");
     return false;
   }
-
-  *activeEnergy = (float)data* (100.0/64.0)*(1000.0/3200.0);  //
+  float div;
+  getCFOutputMode(&div);
+  *activeEnergy = (float)data* (100.0/div)*(1000.0/3200.0);  //
 
   return true;
 }
@@ -264,6 +265,17 @@ bool BL6523GX::setMode() {
   }
 
   delay(500);
+  return true;
+}
+
+bool BL6523GX::getCFOutputMode(float *div) {
+  uint32_t data;
+  if (false == _readRegister(0x19, &data)) {
+    ERR("Can not read WA_CFDIV register.");
+    return false;
+  }
+
+  *div = (uint32_t)data;
   return true;
 }
 
