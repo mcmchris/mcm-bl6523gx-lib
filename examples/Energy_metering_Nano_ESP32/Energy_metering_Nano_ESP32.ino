@@ -11,6 +11,8 @@ void setup() {
 
   BL.setGain();
   delay(25);
+  BL.setMode(); // enabling the voltage high pass filter
+  delay(25);
   BL.setCFOutputMode();
 }
 
@@ -44,6 +46,6 @@ void loop() {
   BL.getActiveEnergy(&energy);
   Serial.printf("%.2f [W/h]\n", energy);    // in one hour with a resistive load 53.52 W (0.4789 A) the energy was 429.00
   delay(1000);
-  
+
   Serial.println();
 }

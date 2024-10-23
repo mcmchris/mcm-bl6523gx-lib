@@ -114,7 +114,7 @@ bool BL6523GX::Reset() {
 }
 
 bool BL6523GX::setCFOutputMode() {
-  if (false == _writeRegister(0x19, 0x080)) {
+  if (false == _writeRegister(0x19, 0x04)) {
     ERR("Can not write WA_CFDIV register.");
     return false;
   }
@@ -147,7 +147,7 @@ bool BL6523GX::getVoltage(float *voltage) {
     return false;
   }
 
-  *voltage = (float)data / 5731.66529943;  // / 44122.3179841
+  *voltage = (float)data / 50387.1788455;  // 5731.66529943  / 50641.219513
   return true;
 }
 
@@ -158,7 +158,7 @@ bool BL6523GX::getCurrent(float *currentA, float *currentB) {
     return false;
   }
 
-  *currentA = (float)dataA / 54955.4219366;
+  *currentA = (float)dataA / 55559.025609; /// 54955.4219366
 
   uint32_t dataB;
   if (false == _readRegister(0x06, &dataB)) {
@@ -166,7 +166,7 @@ bool BL6523GX::getCurrent(float *currentA, float *currentB) {
     return false;
   }
 
-  *currentB = (float)dataB / 54955.4219366;
+  *currentB = (float)dataB / 55559.025609; /// 54955.4219366
 
   return true;
 }
@@ -190,9 +190,9 @@ bool BL6523GX::getActivePower(float *powerA, float *powerB) {
     return false;
   }
   if ((float)dataA >= pow(2, 23)) {
-    *powerA = ((float)dataA - pow(2, 24) / 58.16538);  //
+    *powerA = ((float)dataA - pow(2, 24) / 481.462140704);  //
   } else {
-    *powerA = (float)dataA / 58.16538;
+    *powerA = (float)dataA / 481.462140704;
   }
 
   uint32_t dataB;
@@ -201,9 +201,9 @@ bool BL6523GX::getActivePower(float *powerA, float *powerB) {
     return false;
   }
   if ((float)dataB >= pow(2, 23)) {
-    *powerB = ((float)dataB - pow(2, 24) / 58.16538);  //
+    *powerB = ((float)dataB - pow(2, 24) / 481.462140704);  //
   } else {
-    *powerB = (float)dataB / 58.16538;
+    *powerB = (float)dataB / 481.462140704;
   }
 
   return true;
@@ -216,9 +216,9 @@ bool BL6523GX::getAparentPower(float *apower) {
     return false;
   }
   if ((float)data >= pow(2, 23)) {
-    *apower = ((float)data - pow(2, 24) / 58.16538);  //
+    *apower = ((float)data - pow(2, 24) / 481.462140704);  //
   } else {
-    *apower = (float)data / 58.16538;
+    *apower = (float)data / 481.462140704;
   }
 
   return true;
@@ -251,6 +251,19 @@ bool BL6523GX::getPowerFactor(float *pf) {
     *pf = (float)data / pow(2, 23);
   }
 
+  return true;
+}
+
+bool BL6523GX::setMode() {
+  if (false == _writeRegister(0x14, 0b000000000000000000010000)) {
+    ERR("Can not write MODE register.");
+    return false;
+  }
+  while (BL_Serial.available() != 0) {
+    BL_Serial.read();
+  }
+
+  delay(500);
   return true;
 }
 

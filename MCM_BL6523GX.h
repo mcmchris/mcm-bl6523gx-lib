@@ -20,6 +20,7 @@ class BL6523GX
     bool getFrequency( float *freq );  //[Hz]
     bool setCFOutputMode(); //Energy pulse output CF pin
     bool setGain(); // 2^n (max n = 5)
+    bool setMode(); // 2^n (max n = 5)
     bool Reset();
 
   private:
