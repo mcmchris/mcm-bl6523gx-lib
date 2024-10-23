@@ -113,8 +113,8 @@ bool BL6523GX::Reset() {
   return true;
 }
 
-bool BL6523GX::setCFOutputMode() {
-  if (false == _writeRegister(0x19, 0x04)) {
+bool BL6523GX::setCFOutputMode(uint16_t cf_div) {
+  if (false == _writeRegister(0x19, cf_div)) {
     ERR("Can not write WA_CFDIV register.");
     return false;
   }
@@ -231,7 +231,7 @@ bool BL6523GX::getActiveEnergy(float *activeEnergy) {
     return false;
   }
 
-  *activeEnergy = (float)data;  //
+  *activeEnergy = (float)data* (100.0/64.0)*(1000.0/3200.0);  //
 
   return true;
 }

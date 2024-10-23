@@ -18,7 +18,7 @@ class BL6523GX
     bool getActiveEnergy( float *activeEnergy );  //[Wh]
     bool getPowerFactor( float *pf );  //[0-1.0]
     bool getFrequency( float *freq );  //[Hz]
-    bool setCFOutputMode(); //Energy pulse output CF pin
+    bool setCFOutputMode(uint16_t cf_div); //Energy pulse output CF pin 1 - 256 (2^n)
     bool setGain(); // 2^n (max n = 5)
     bool setMode(); // 2^n (max n = 5)
     bool Reset();

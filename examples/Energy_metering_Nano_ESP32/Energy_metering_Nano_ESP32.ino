@@ -13,7 +13,7 @@ void setup() {
   delay(25);
   BL.setMode(); // enabling the voltage high pass filter
   delay(25);
-  BL.setCFOutputMode();
+  BL.setCFOutputMode(64); // select the CF output divider
 }
 
 void loop() {
