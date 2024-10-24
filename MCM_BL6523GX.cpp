@@ -241,9 +241,8 @@ bool BL6523GX::getActiveEnergy(float *activeEnergy) {
   float div;
   getCFOutputMode(&div);
   Serial.println(div);
-  //*activeEnergy = (float)data * (100.0/div)*(1000.0/3200.0);  // * (100.0/64)*(1000.0/3200.0)
-  //*activeEnergy = (float)data / (707.0 - 33.0);
-  *activeEnergy = (float)data;
+  
+  *activeEnergy = (float)data*(1000.0/(2062.0*(div/4.0)));
   return true;
 }
 

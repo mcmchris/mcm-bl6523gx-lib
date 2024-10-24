@@ -38,9 +38,6 @@ void setup() {
   delay(25);
   BL.setCFOutputMode(CF_DIV);  // select the CF output divider
   delay(25);
-  uint32_t mode;
-  BL.getMode(&mode);  //
-  Serial.println(mode, BIN);
   delay(250);
 }
 
@@ -72,7 +69,7 @@ void loop() {
     BL.getActivePower(&powerA, &powerB);
     Serial.printf("A: %.2f [W], B: %.2f [W]\n", powerA, powerB);
 
-    Feedback(powerA);
+    Feedback(powerB);
 
     float Apower;
     BL.getAparentPower(&Apower);
@@ -81,10 +78,6 @@ void loop() {
     float energy;
     BL.getActiveEnergy(&energy);
     Serial.printf("%.2f [W/h]\n", energy);  // in one hour with a resistive load 53.52 W (0.4789 A) the energy was 429.00
-
-    float Aenergy;
-    BL.getAparentEnergy(&Aenergy);
-    Serial.printf("%.2f [VAHR]\n", Aenergy);  // in one hour with a resistive load 53.52 W (0.4789 A) the energy was 429.00
 
     Serial.println();
 
