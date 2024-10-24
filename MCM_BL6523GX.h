@@ -16,14 +16,18 @@ class BL6523GX
     bool getActivePower( float *activePowerA, float *activePowerB );  //[W]
     bool getAparentPower( float *apower );  //[VA]
     bool getActiveEnergy( float *activeEnergy );  //[Wh]
+    bool getAparentEnergy( float *aparentEnergy );  //[Wh]
     bool getPowerFactor( float *pf );  //[0-1.0]
     bool getFrequency( float *freq );  //[Hz]
     bool setCFOutputMode(uint16_t cf_div); //Energy pulse output CF pin 1 - 256 (2^n)
     bool getCFOutputMode(float *div); //Energy pulse output CF pin 1 - 256 (2^n)
     bool setGain(byte V_GAIN = 1, byte IB_GAIN = 1, byte IA_GAIN = 1); // 2^n (max n = 5)
     bool setMode(); // 2^n (max n = 5)
+    bool getMode(uint32_t *mode); // 2^n (max n = 5)
     bool Reset();
-    
+    bool getLineWattHr(float *l_watt_hr);
+    bool getLinecyc(float *linecyc);
+    bool setLinecyc(); // 
 
   private:
     const uint16_t timeout = 1000;  //Serial timeout[ms]

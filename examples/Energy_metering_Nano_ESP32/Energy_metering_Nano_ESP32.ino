@@ -14,7 +14,7 @@ int lock = 0;
 // constants won't change:
 const long interval = 1000;
 
-#define CF_DIV 1
+#define CF_DIV 4
 #define V_GAIN 2
 #define IB_GAIN 2
 #define IA_GAIN 2
@@ -32,11 +32,15 @@ void setup() {
 
   delay(250);
 
-  BL.setGain(V_GAIN, IB_GAIN, IA_GAIN); //Voltage Gain, Current B Gain, Current A Gain
+  BL.setGain(V_GAIN, IB_GAIN, IA_GAIN);  //Voltage Gain, Current B Gain, Current A Gain
   delay(25);
   BL.setMode();  // enabling the voltage high pass filter
   delay(25);
   BL.setCFOutputMode(CF_DIV);  // select the CF output divider
+  delay(25);
+  uint32_t mode;
+  BL.getMode(&mode);  //
+  Serial.println(mode, BIN);
   delay(250);
 }
 
@@ -77,7 +81,13 @@ void loop() {
     float energy;
     BL.getActiveEnergy(&energy);
     Serial.printf("%.2f [W/h]\n", energy);  // in one hour with a resistive load 53.52 W (0.4789 A) the energy was 429.00
+
+    float Aenergy;
+    BL.getAparentEnergy(&Aenergy);
+    Serial.printf("%.2f [VAHR]\n", Aenergy);  // in one hour with a resistive load 53.52 W (0.4789 A) the energy was 429.00
+
     Serial.println();
+
   }
 
   if (digitalRead(USR_BTN) == LOW && lock == 0) {
@@ -98,6 +108,9 @@ void loop() {
 
 void Feedback(int power) {
   int count = map(power, 0, 60, 1, 8);
+  if(count > 8){
+    count = 8;
+  }
   Serial.printf("LEDs to control: %d", count);
   Serial.println();
   for (int i = 0; i < count; i++) {

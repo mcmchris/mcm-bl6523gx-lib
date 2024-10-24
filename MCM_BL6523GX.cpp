@@ -193,19 +193,23 @@ bool BL6523GX::getActivePower(float *powerA, float *powerB) {
     ERR("Can not read POWER_A register.");
     return false;
   }
+
   if ((float)dataA >= pow(2, 23)) {
-    *powerA = ((float)dataA - pow(2, 24) / 481.462140704);  //
+    *powerA = ((float)dataA - pow(2, 24)) / 481.462140704;  //
   } else {
     *powerA = (float)dataA / 481.462140704;
   }
+  
 
   uint32_t dataB;
   if (false == _readRegister(0x13, &dataB)) {
     ERR("Can not read POWER_B register.");
     return false;
   }
+
+
   if ((float)dataB >= pow(2, 23)) {
-    *powerB = ((float)dataB - pow(2, 24) / 481.462140704);  //
+    *powerB = ((float)dataB - pow(2, 24)) / 481.462140704;  //
   } else {
     *powerB = (float)dataB / 481.462140704;
   }
@@ -238,7 +242,54 @@ bool BL6523GX::getActiveEnergy(float *activeEnergy) {
   getCFOutputMode(&div);
   Serial.println(div);
   //*activeEnergy = (float)data * (100.0/div)*(1000.0/3200.0);  // * (100.0/64)*(1000.0/3200.0)
+  //*activeEnergy = (float)data / (707.0 - 33.0);
   *activeEnergy = (float)data;
+  return true;
+}
+
+bool BL6523GX::getAparentEnergy( float *aparentEnergy ) {
+  uint32_t data;
+  if (false == _readRegister(0x0D, &data)) {
+    ERR("Can not read VAHR register.");
+    return false;
+  }
+  
+  *aparentEnergy = (float)data; // / 481.462140704
+  return true;
+}
+
+bool BL6523GX::getLineWattHr(float *l_watt_hr) {
+  uint32_t data;
+  if (false == _readRegister(0x04, &data)) {
+    ERR("Can not read LINE_WATTHR register.");
+    return false;
+  }
+
+  *l_watt_hr = (float)data;
+  return true;
+}
+
+bool BL6523GX::setLinecyc() {
+  if (false == _writeRegister(0x31, 0x001)) { 
+    ERR("Can not write LINECCC register.");
+    return false;
+  }
+  while (BL_Serial.available() != 0) {
+    BL_Serial.read();
+  }
+
+  delay(500);
+  return true;
+}
+
+bool BL6523GX::getLinecyc(float *linecyc) {
+  uint32_t data;
+  if (false == _readRegister(0x31, &data)) {
+    ERR("Can not read LINECYC register.");
+    return false;
+  }
+
+  *linecyc = (float)data;
   return true;
 }
 
@@ -261,7 +312,7 @@ bool BL6523GX::getPowerFactor(float *pf) {
 }
 
 bool BL6523GX::setMode() {
-  if (false == _writeRegister(0x14, 0b000000000000000000010000)) {
+  if (false == _writeRegister(0x14, 0b001000000000000000010001)) { //0b000000000000000000010000 // first bit define which channel to CF respond to 0 = A, 1 = B
     ERR("Can not write MODE register.");
     return false;
   }
@@ -313,6 +364,17 @@ byte BL6523GX::intToGain(uint8_t gain){
             break;
     }
     return data;
+}
+
+bool BL6523GX::getMode(uint32_t *mode) {
+  uint32_t data;
+  if (false == _readRegister(0x14, &data)) {
+    ERR("Can not read MODE register.");
+    return false;
+  }
+
+  *mode = (uint32_t)data;
+  return true;
 }
 
 /*******************************************************************/
