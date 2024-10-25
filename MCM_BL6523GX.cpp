@@ -311,7 +311,7 @@ bool BL6523GX::getPowerFactor(float *pf) {
 }
 
 bool BL6523GX::setMode() {
-  if (false == _writeRegister(0x14, 0b001000000000000100000001)) { //0b000000000000000000010000 // first bit define which channel to CF respond to 0 = A, 1 = B
+  if (false == _writeRegister(0x14, 0b001000000000001000000001)) { //0b000000000000000000010000 // first bit define which channel to CF respond to 0 = A, 1 = B
     ERR("Can not write MODE register.");
     return false;
   }
