@@ -100,7 +100,7 @@ void loop() {
 }
 
 void Feedback(int power) {
-  int count = map(power, 0, 60, 1, 8);
+  int count = map(power, 0, 3200, 1, 8);
   if(count > 8){
     count = 8;
   }
