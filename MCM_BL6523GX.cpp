@@ -130,7 +130,7 @@ bool BL6523GX::setGain(byte V_GAIN , byte IB_GAIN, byte IA_GAIN) {
 
   uint32_t gain_data = intToGain(V_GAIN) << 8 | intToGain(IB_GAIN) << 4 | intToGain(IA_GAIN);
 
-  Serial.println(gain_data, BIN);
+  //Serial.println(gain_data, BIN);
 
   if (false == _writeRegister(0x15, gain_data)) {  //Voltage Gain, Current B Gain, Current A Gain
     ERR("Can not write GAIN register.");
@@ -240,8 +240,7 @@ bool BL6523GX::getActiveEnergy(float *activeEnergy) {
   }
   float div;
   getCFOutputMode(&div);
-  Serial.println(div);
-  
+
   *activeEnergy = (float)data*(1000.0/(2062.0*(div/4.0)));
   return true;
 }
@@ -311,7 +310,7 @@ bool BL6523GX::getPowerFactor(float *pf) {
 }
 
 bool BL6523GX::setMode() {
-  if (false == _writeRegister(0x14, 0b001000000000000000000001)) { //0b000000000000000000010000 // first bit define which channel to CF respond to 0 = A, 1 = B
+  if (false == _writeRegister(0x14, 0b001000000000000000000001)) { // first bit define which channel to CF respond to 0 = A, 1 = B
     ERR("Can not write MODE register.");
     return false;
   }
@@ -359,7 +358,8 @@ byte BL6523GX::intToGain(uint8_t gain){
             data = 0b110;
             break;
         default:
-        Serial.println("Gain out of range");
+            Serial.println("Gain out of range");
+            data = 0b000;
             break;
     }
     return data;

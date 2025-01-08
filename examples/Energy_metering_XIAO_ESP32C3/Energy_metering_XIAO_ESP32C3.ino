@@ -4,7 +4,6 @@ BL6523GX BL;
 
 unsigned long previousMillis = 0;
 int lock = 0;
-
 // constants won't change:
 const long interval = 1000;
 
@@ -18,7 +17,7 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
 
-  BL.begin(4800, D0, D1);  //Baud rate, RX pin, TX pin
+  BL.begin(4800, D7, D6);  //Baud rate, RX pin, TX pin
 
   BL.setGain(V_GAIN, IB_GAIN, IA_GAIN);  //Voltage Gain, Current B Gain, Current A Gain
   delay(25);
@@ -82,6 +81,5 @@ void loop() {
     lock = 1;
   } else {
     lock = 0;
-  }
   */
 }
