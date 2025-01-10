@@ -126,11 +126,17 @@ bool BL6523GX::setCFOutputMode(uint16_t cf_div) {
   return true;
 }
 
-bool BL6523GX::setGain(byte V_GAIN , byte IB_GAIN, byte IA_GAIN) {
+bool BL6523GX::setCal(uint16_t V_CAL, uint16_t I_CAL, uint16_t P_CAL){
+  _V_CAL = V_CAL;
+  _I_CAL = I_CAL;
+  _P_CAL = P_CAL;
+}
+
+bool BL6523GX::setGain(int V_GAIN , int IB_GAIN, int IA_GAIN) {
 
   uint32_t gain_data = intToGain(V_GAIN) << 8 | intToGain(IB_GAIN) << 4 | intToGain(IA_GAIN);
 
-  //Serial.println(gain_data, BIN);
+  Serial.println(gain_data, BIN);
 
   if (false == _writeRegister(0x15, gain_data)) {  //Voltage Gain, Current B Gain, Current A Gain
     ERR("Can not write GAIN register.");
@@ -151,7 +157,7 @@ bool BL6523GX::getVoltage(float *voltage) {
     return false;
   }
 
-  *voltage = (float)data / 50387.1788455;  // 5731.66529943  / 50641.219513
+  *voltage = (float)data / _V_CAL; //50387.1788455;  // 5731.66529943  / 50641.219513
   return true;
 }
 
@@ -162,7 +168,7 @@ bool BL6523GX::getCurrent(float *currentA, float *currentB) {
     return false;
   }
 
-  *currentA = (float)dataA / 55559.025609; /// 54955.4219366
+  *currentA = (float)dataA / _I_CAL; // 55559.025609
 
   uint32_t dataB;
   if (false == _readRegister(0x06, &dataB)) {
@@ -170,7 +176,7 @@ bool BL6523GX::getCurrent(float *currentA, float *currentB) {
     return false;
   }
 
-  *currentB = (float)dataB / 55559.025609; /// 54955.4219366
+  *currentB = (float)dataB / _I_CAL; // 55559.025609
 
   return true;
 }
@@ -182,8 +188,7 @@ bool BL6523GX::getFrequency(float *freq) {
     return false;
   }
 
-  //*freq = (2.73449463549 * 3579545.0) / (float)data;  //
-  *freq = (87.3906 * 3579545.0) / (32.0*(float)data);  // constants defined by datasheet
+  *freq = (87.3906 * 3579545.0) / (32.0*(float)data);  // 87.3906 * osc_freq : constants defined by datasheet
   return true;
 }
 
@@ -195,9 +200,9 @@ bool BL6523GX::getActivePower(float *powerA, float *powerB) {
   }
 
   if ((float)dataA >= pow(2, 23)) {
-    *powerA = ((float)dataA - pow(2, 24)) / 481.462140704;  //
+    *powerA = ((float)dataA - pow(2, 24)) / _P_CAL; //481.462140704;
   } else {
-    *powerA = (float)dataA / 481.462140704;
+    *powerA = (float)dataA / _P_CAL; //481.462140704;
   }
   
 
@@ -209,9 +214,9 @@ bool BL6523GX::getActivePower(float *powerA, float *powerB) {
 
 
   if ((float)dataB >= pow(2, 23)) {
-    *powerB = ((float)dataB - pow(2, 24)) / 481.462140704;  //
+    *powerB = ((float)dataB - pow(2, 24)) / _P_CAL; //481.462140704;
   } else {
-    *powerB = (float)dataB / 481.462140704;
+    *powerB = (float)dataB / _P_CAL; //481.462140704;
   }
 
   return true;
@@ -224,15 +229,15 @@ bool BL6523GX::getAparentPower(float *apower) {
     return false;
   }
   if ((float)data >= pow(2, 23)) {
-    *apower = ((float)data - pow(2, 24) / 481.462140704);  //
+    *apower = ((float)data - pow(2, 24)) / _P_CAL; //481.462140704;
   } else {
-    *apower = (float)data / 481.462140704;
+    *apower = (float)data / _P_CAL; //481.462140704;
   }
 
   return true;
 }
 
-bool BL6523GX::getActiveEnergy(float *activeEnergy) {
+bool BL6523GX::getCFCount(float *cf_count) {
   uint32_t data;
   if (false == _readRegister(0x0C, &data)) {
     ERR("Can not read WATTHR register.");
@@ -241,18 +246,18 @@ bool BL6523GX::getActiveEnergy(float *activeEnergy) {
   float div;
   getCFOutputMode(&div);
 
-  *activeEnergy = (float)data*(1000.0/(2062.0*(div/4.0)));
+  *cf_count = (float)data; //*(1000.0/(2062.0*(div/4.0)));
   return true;
 }
 
-bool BL6523GX::getAparentEnergy( float *aparentEnergy ) {
+bool BL6523GX::getActiveEnergy( float *activeEnergy ) {
   uint32_t data;
   if (false == _readRegister(0x0D, &data)) {
     ERR("Can not read VAHR register.");
     return false;
   }
   
-  *aparentEnergy = (float)data; // / 481.462140704
+  *activeEnergy = (float)data; // / 481.462140704
   return true;
 }
 
@@ -309,8 +314,29 @@ bool BL6523GX::getPowerFactor(float *pf) {
   return true;
 }
 
-bool BL6523GX::setMode() {
-  if (false == _writeRegister(0x14, 0b001000000000000000000001)) { // first bit define which channel to CF respond to 0 = A, 1 = B
+/*
+Energy Channel Selection
+  ch = 0: the CF register will measure energy on channel A
+  ch = 1:  the CF register will measure energy on channel B
+CF Accumulation Setup
+  cf_mode = 0: absolute energy count
+  cf_mode = 1: positive energy count
+  cf_mode = 2: arithmetical energy count
+  cf_mode = 3: negative energy count
+Control CF output
+  dis_out = 0: CF enabled
+  dis_out = 1: CF disabled
+Energy Register Accumulation
+  energy_math = 0: algebraic sum accumulation
+  energy_math = 1: absolute accumulation
+*/
+bool BL6523GX::setMode(bool ch, uint8_t cf_mode, bool dis_out, bool energy_math) {
+
+  uint32_t mode_data = energy_math << 21 | dis_out << 17 | cf_mode << 8 | ch;
+
+  //Serial.println(mode_data, BIN);
+
+  if (false == _writeRegister(0x14, mode_data)) { // first bit define which channel to CF respond to 0 = A, 1 = B
     ERR("Can not write MODE register.");
     return false;
   }
@@ -333,36 +359,41 @@ bool BL6523GX::getCFOutputMode(float *div) {
   return true;
 }
 
-byte BL6523GX::intToGain(uint8_t gain){
-    uint8_t data;
-    switch(gain){
-        case 1:
-            data = 0b000;
-            break;
-        case 2:
-            data = 0b001;
-            break;
-        case 4:
-            data = 0b010;
-            break;
-        case 8:
-            data = 0b011;
-            break;
-        case 16:
-            data = 0b100;
-            break;
-        case 24:
-            data = 0b101;
-            break;
-        case 32:
-            data = 0b110;
-            break;
-        default:
-            Serial.println("Gain out of range");
-            data = 0b000;
-            break;
+uint8_t BL6523GX::intToGain(uint8_t gain)
+{
+  uint8_t data;
+  if (gain <= 32)
+  {
+    switch (gain)
+    {
+    case 1:
+      data = 0b0000;
+      break;
+    case 2:
+      data = 0b0001;
+      break;
+    case 4:
+      data = 0b0010;
+      break;
+    case 8:
+      data = 0b0011;
+      break;
+    case 16:
+      data = 0b0100;
+      break;
+    case 24:
+      data = 0b0101;
+      break;
+    case 32:
+      data = 0b0110;
+      break;
+    default:
+      Serial.println("Gain out of range!");
+      data = 0b0000;
     }
-    return data;
+  }
+
+  return data;
 }
 
 bool BL6523GX::getMode(uint32_t *mode) {
