@@ -4,13 +4,16 @@
 *	Date: 22/10/2024
 */
 
+#pragma once
+#include <Arduino.h>
+
 #ifndef MCM_BL6523GX_h
 #define MCM_BL6523GX_h
 
 class BL6523GX
 {
   public:
-    bool begin(uint32_t baud_rate, uint8_t rxPin, uint8_t txPin);
+    bool begin(HardwareSerial& serial, int8_t rxPin = -1, int8_t txPin = -1);
     bool getCurrent( float *currentA, float *currentB );  //[A]
     bool getVoltage( float *voltage );  //[V]
     bool getActivePower( float *activePowerA, float *activePowerB );  //[W]
@@ -28,9 +31,10 @@ class BL6523GX
     bool getLineWattHr(float *l_watt_hr);
     bool getLinecyc(float *linecyc);
     bool setLinecyc(); //
-    bool setCal(uint16_t V_CAL, uint16_t I_CAL, uint16_t P_CAL); 
+    bool setCal(uint16_t V_CAL = 50355, uint16_t I_CAL = 55559, uint16_t P_CAL = 481); 
 
   private:
+    HardwareSerial* serialPtr = nullptr;  // pointer to HardwareSerial
     uint16_t _V_CAL;
     uint16_t _I_CAL;
     uint16_t _P_CAL;

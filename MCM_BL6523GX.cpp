@@ -6,7 +6,6 @@
 #include <Arduino.h>
 #include "MCM_BL6523GX.h"
 
-#define BL_Serial Serial0
 
 #define BL6523GX_DEBUG 1
 #if BL6523GX_DEBUG
@@ -23,15 +22,16 @@
 #define ERR(...)
 #endif /* BL6523GX_DBG */
 
-bool BL6523GX::begin(uint32_t baud_rate, uint8_t rxPin, uint8_t txPin)
+bool BL6523GX::begin(HardwareSerial& serial, int8_t rxPin, int8_t txPin)
 {
 
-  /* For M5STACK_PAPER */
-  // Serial2.begin(4800, SERIAL_8N1, 18, 19);
+serialPtr = &serial;  // default
 
-  BL_Serial.begin(baud_rate, SERIAL_8N1, rxPin, txPin);
-
-  delay(500);
+#if defined (ARDUINO_RASPBERRY_PI_PICO)
+  serialPtr->begin(4800);
+#else
+  serialPtr->begin(4800, SERIAL_8N1, rxPin, txPin);
+#endif
   return true;
 }
 
@@ -51,36 +51,36 @@ uint8_t BL6523GX::_culcCheckSum(uint8_t *txData, int txLenght, uint8_t *rxData, 
 
 bool BL6523GX::_writeRegister(uint8_t address, uint32_t data) {
   //read buffer clear
-  while (BL_Serial.available() != 0) {
-    BL_Serial.read();
+  while (serialPtr->available() != 0) {
+    serialPtr->read();
   }
 
   //Register Unlock
   uint8_t unlockTxData[6] = { 0xCA, 0x3E, 0x55, 0, 0, 0 };
   unlockTxData[5] = _culcCheckSum(unlockTxData, sizeof(unlockTxData) - 1, 0, 0);
-  BL_Serial.write(unlockTxData, sizeof(unlockTxData));
+  serialPtr->write(unlockTxData, sizeof(unlockTxData));
 
   //Write Register
   uint8_t txData[6] = { 0xCA, address, (uint8_t)(data), (uint8_t)(data >> 8), (uint8_t)(data >> 16) };
   //uint8_t txData[6] = { 0xCA, address, (uint8_t)(data >> 16), (uint8_t)(data >> 8), (uint8_t)(data) };
   txData[5] = _culcCheckSum(txData, sizeof(txData) - 1, 0, 0);
-  BL_Serial.write(txData, sizeof(txData));
+  serialPtr->write(txData, sizeof(txData));
 
   return true;
 }
 
 bool BL6523GX::_readRegister(uint8_t address, uint32_t *data) {
   uint8_t txData[] = { 0x35, address };
-  BL_Serial.write(txData, sizeof(txData));
+  serialPtr->write(txData, sizeof(txData));
 
   uint8_t rxData[4] = { 0, 0, 0, 0 };
   uint32_t startTime = millis();
-  while (BL_Serial.available() != sizeof(rxData)) {
+  while (serialPtr->available() != sizeof(rxData)) {
     delay(10);
     if ((millis() - startTime) > timeout)
       break;
   }
-  int rxDataLength = BL_Serial.readBytes(rxData, sizeof(rxData));
+  int rxDataLength = serialPtr->readBytes(rxData, sizeof(rxData));
 
   if (rxDataLength == 0) {
     ERR("Serial Timeout.");
@@ -105,8 +105,8 @@ bool BL6523GX::Reset() {
     ERR("Can not write SOFT_RESET register.");
     return false;
   }
-  while (BL_Serial.available() != 0) {
-    BL_Serial.read();
+  while (serialPtr->available() != 0) {
+    serialPtr->read();
   }
 
   delay(500);
@@ -118,8 +118,8 @@ bool BL6523GX::setCFOutputMode(uint16_t cf_div) {
     ERR("Can not write WA_CFDIV register.");
     return false;
   }
-  while (BL_Serial.available() != 0) {
-    BL_Serial.read();
+  while (serialPtr->available() != 0) {
+    serialPtr->read();
   }
 
   delay(500);
@@ -130,6 +130,8 @@ bool BL6523GX::setCal(uint16_t V_CAL, uint16_t I_CAL, uint16_t P_CAL){
   _V_CAL = V_CAL;
   _I_CAL = I_CAL;
   _P_CAL = P_CAL;
+
+  return true;
 }
 
 bool BL6523GX::setGain(int V_GAIN , int IB_GAIN, int IA_GAIN) {
@@ -142,8 +144,8 @@ bool BL6523GX::setGain(int V_GAIN , int IB_GAIN, int IA_GAIN) {
     ERR("Can not write GAIN register.");
     return false;
   }
-  while (BL_Serial.available() != 0) {
-    BL_Serial.read();
+  while (serialPtr->available() != 0) {
+    serialPtr->read();
   }
 
   delay(500);
@@ -154,6 +156,10 @@ bool BL6523GX::getVoltage(float *voltage) {
   uint32_t data;
   if (false == _readRegister(0x07, &data)) {
     ERR("Can not read V_RMS register.");
+    return false;
+  }
+  if (_V_CAL == 0) {
+    ERR("Voltage calibration factor is 0!");
     return false;
   }
 
@@ -277,8 +283,8 @@ bool BL6523GX::setLinecyc() {
     ERR("Can not write LINECCC register.");
     return false;
   }
-  while (BL_Serial.available() != 0) {
-    BL_Serial.read();
+  while (serialPtr->available() != 0) {
+    serialPtr->read();
   }
 
   delay(500);
@@ -340,8 +346,8 @@ bool BL6523GX::setMode(bool ch, uint8_t cf_mode, bool dis_out, bool energy_math)
     ERR("Can not write MODE register.");
     return false;
   }
-  while (BL_Serial.available() != 0) {
-    BL_Serial.read();
+  while (serialPtr->available() != 0) {
+    serialPtr->read();
   }
 
   delay(500);
@@ -448,8 +454,8 @@ bool setMode() {
     ERR("Can not write SOFT_RESET register.");
     return false;
   }
-  while (BL_Serial.available() != 0) {
-    BL_Serial.read();
+  while (serialPtr->available() != 0) {
+    serialPtr->read();
   }
 
   delay(500);
